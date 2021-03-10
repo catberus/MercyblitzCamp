@@ -1,5 +1,6 @@
 package org.geektimes.projects.user.sql;
 
+import org.geektimes.projects.user.context.ComponentContext;
 import org.geektimes.projects.user.domain.User;
 
 import javax.naming.Context;
@@ -14,8 +15,32 @@ import java.sql.*;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class DBConnectionManager {
+
+    private final Logger logger = Logger.getLogger(DBConnectionManager.class.getName());
+
+//    private ComponentContext context = ComponentContext.getInstance();
+
+    public Connection getConnection(){
+        //放入方法内部，保证其被加载？
+        ComponentContext context = ComponentContext.getInstance();
+
+        DataSource dataSource = context.getComponent("jdbc/UserPlatformDB");
+        Connection connection = null;
+
+        try {
+            connection=dataSource.getConnection();
+        } catch (SQLException e) {
+            logger.log(Level.SEVERE, e.getMessage());
+        }
+        if(connection!=null){
+            logger.log(Level.INFO, "获取JNDI数据库连接成功");
+        }
+        return connection;
+    }
 
     private Connection connection;
 
@@ -38,83 +63,6 @@ public class DBConnectionManager {
             "('E','******','e@gmail.com','5')";
 
 
-        static {
-        try {
-            Class.forName("org.apache.derby.jdbc.EmbeddedDriver");
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        }
-
-        try (Connection connection = DriverManager.getConnection(databaseURL);
-             Statement statement = connection.createStatement();
-        ) {
-            // 删除 users 表
-            System.out.println(statement.execute(DROP_USERS_TABLE_DDL_SQL)); // false
-            // 创建 users 表
-            System.out.println(statement.execute(CREATE_USERS_TABLE_DDL_SQL)); // false
-
-            System.out.println(statement.executeUpdate(INSERT_USER_DML_SQL)); // false
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-//    static {
-//        try {
-//            Context ctx = new InitialContext();
-//
-//            //找到DataSource,对名称进行定位java:comp/env是必须加的,后面跟你的DataSource名
-//
-//            DataSource ds = (DataSource) ctx.lookup("java:comp/env/");
-//
-//            //取出连接
-//            Connection connection = ds.getConnection();
-//            Statement statement = connection.createStatement();
-//            System.out.println(statement.execute(DROP_USERS_TABLE_DDL_SQL)); // false
-//            System.out.println(statement.execute(CREATE_USERS_TABLE_DDL_SQL)); // false
-//            System.out.println(statement.executeUpdate(INSERT_USER_DML_SQL)); // 5
-//
-//            statement.close();
-//            connection.close();
-//
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//    }
-
-
-    public Connection getConnection() {
-        try {
-            this.connection = DriverManager.getConnection(databaseURL);
-        } catch (SQLException e) {
-            throw new RuntimeException(e.getCause());
-        }
-        return connection;
-    }
-
-//    public Connection getConnection() {
-//        try {
-//            Context ctx = new InitialContext();
-//
-//            //找到DataSource,对名称进行定位java:comp/env是必须加的,后面跟你的DataSource名
-//            DataSource ds = (DataSource) ctx.lookup("java:comp/env/jdbc/UserPlatformDB");
-//
-//            //取出连接
-//            this.connection = ds.getConnection();
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//        return connection;
-//    }
-
-    public void releaseConnection() {
-        if (this.connection != null) {
-            try {
-                this.connection.close();
-            } catch (SQLException e) {
-                throw new RuntimeException(e.getCause());
-            }
-        }
-    }
 
 
     public static void main(String[] args) throws Exception {

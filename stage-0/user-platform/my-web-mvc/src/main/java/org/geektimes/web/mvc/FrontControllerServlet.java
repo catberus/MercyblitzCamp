@@ -118,11 +118,6 @@ public class FrontControllerServlet extends HttpServlet {
         // 映射到 Controller
         Controller controller = controllersMapping.get(requestMappingPath);
 
-        controllersMapping.entrySet().forEach(e->{
-            System.out.print(e.getKey() + " "+ e.getValue());
-            System.out.println();
-        });
-
         if (controller != null) {
 
             HandlerMethodInfo handlerMethodInfo = handleMethodInfoMapping.get(requestMappingPath);
